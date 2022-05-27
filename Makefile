@@ -28,10 +28,19 @@ $(WFLAGS)
 
 UF2_VERSION_BASE = $(shell git describe --dirty --always --tags)
 
+CHIP_REVISION = $(CHIP_FAMILY)a
+
 ifeq ($(CHIP_FAMILY), samd21)
+ifeq ($(patsubst %D,,$(CHIP_VARIANT)),) # Check for D variant board
+CHIP_REVISION=$(CHIP_FAMILY)d
+LINKER_SCRIPT=scripts/samd21e17d.ld
+BOOTLOADER_SIZE=8192
+SELF_LINKER_SCRIPT=scripts/samd21e17d_self.ld
+else
 LINKER_SCRIPT=scripts/samd21j18a.ld
 BOOTLOADER_SIZE=8192
 SELF_LINKER_SCRIPT=scripts/samd21j18a_self.ld
+endif
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
@@ -52,7 +61,7 @@ INCLUDES += -I$(BUILD_PATH)
 
 
 ifeq ($(CHIP_FAMILY), samd21)
-INCLUDES += -Ilib/samd21/samd21a/include/
+INCLUDES += -Ilib/samd21/$(CHIP_REVISION)/include/
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
@@ -70,7 +79,7 @@ endif
 COMMON_SRC = \
 	src/flash_$(CHIP_FAMILY).c \
 	src/init_$(CHIP_FAMILY).c \
-	src/startup_$(CHIP_FAMILY).c \
+	src/startup_$(CHIP_REVISION).c \
 	src/usart_sam_ba.c \
 	src/screen.c \
 	src/images.c \
